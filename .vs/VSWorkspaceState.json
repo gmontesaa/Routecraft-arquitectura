@@ -1,8 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\places\\templates"
+    "\\places",
+    "\\places\\templates",
+    "\\routecraft"
   ],
-  "SelectedNode": "\\.gitignore",
+  "SelectedNode": "\\places\\templates\\about.html",
   "PreviewInSolutionExplorer": false
 }

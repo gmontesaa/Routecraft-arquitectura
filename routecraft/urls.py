@@ -21,5 +21,5 @@ from places import views as placesviews
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', placesviews.home),  # Ruta para la página principal
-    path('about/', views.about, name='about'),
+    path('about/', placesviews.about, name='about'),
 ]
