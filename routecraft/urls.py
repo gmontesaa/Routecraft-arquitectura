@@ -17,9 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from places import views as placesviews
-
+from django.conf import settings
+from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', placesviews.home),  # Ruta para la página principal
     path('about/', placesviews.about, name='about'),
+    path('ciudades/medellin/', placesviews.medellin, name='medellin'),
+    path('ciudades/bogota/', placesviews.bogota, name='bogota'),
+    path('ciudades/barranquilla/', placesviews.barranquilla, name='barranquilla'),
 ]
+
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

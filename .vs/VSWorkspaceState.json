@@ -1,10 +1,13 @@
 {
   "ExpandedNodes": [
     "",
+    "\\media",
+    "\\media\\places",
     "\\places",
+    "\\places\\migrations\\__pycache__",
     "\\places\\templates",
     "\\routecraft"
   ],
-  "SelectedNode": "\\places\\templates\\about.html",
+  "SelectedNode": "\\places\\models.py",
   "PreviewInSolutionExplorer": false
 }

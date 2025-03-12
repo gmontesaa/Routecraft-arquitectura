@@ -1,0 +1,35 @@
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barranquilla</title>
+</head>
+<body>
+    <h1>Bienvenidos a Barranquilla</h1>
+</body>
+
+    <div class="container">
+        <form action="">
+            <div class="mb-3">
+                <label for="searchPlace" class="form-label">Buscar en Barranquilla:</label>
+                <input type="text" class="form-control" name="searchPlace">
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </div>
+        </form>
+
+        <p>Buscando: {{ searchTerm }}</p>
+
+        {% for place in places %}
+        <h2>Nombre: {{ place.name }}</h2>
+        <h3>Descripcion: {{ place.description }}</h3>
+        <h3>Categoria: {{ place.category }}</h3>
+        <img src="{{ place.image.url }}" alt="{{ place.name }}">
+        <h3>Direccion: {{ place.adress }}</h3>
+        <h3>Ciudad: {{ place.city }}</h3>
+        <h3>Costo: {{ place.cost }}</h3>
+        {% if place.url %}
+        <a href="{{ place.url }}">Más información</a>
+        {% endif %}
+        {% endfor %}
+    </div>
