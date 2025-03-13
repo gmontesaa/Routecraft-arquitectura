@@ -1,4 +1,5 @@
-
+{% extends 'base.html' %}
+{% block content %}
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -12,26 +13,31 @@
 <div class="container">
     <form action="">
         <div class="mb-3">
-            <label for="searchPlace" class="form-label">Buscar en Medellín:</label>
-            <input type="text" class="form-control" name="searchPlace">
-            <button type="submit" class="btn btn-primary">Buscar</button>
+            <label for="searchPlace" class="form-label">Search for Place in Medellin:</label>
+            <input type="text" class="form-control" name="searchPlace" />
+            <button type="submit" class="btn btn-primary">Search</button>
         </div>
     </form>
-
-    <p>Buscando: {{ searchTerm }}</p>
-
-    {% for place in places %}
-    <h2>Nombre: {{ place.name }}</h2>
-    <h3>Descripcion: {{ place.description }}</h3>
-    <h3>Categoria: {{ place.category }}</h3>
-    <img src="{{ place.image.url }}" alt="{{ place.name }}">
-    <h3>Direccion: {{ place.adress }}</h3>
-    <h3>Ciudad: {{ place.city }}</h3>
-    <h3>Costo: {{ place.cost }}</h3>
-    {% if place.url %}
-    <a href="{{ place.url }}">Más información</a>
-    {% endif %}
-    {% endfor %}
+    <p>Searching for: {{ searchTerm }}</p>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for place in places %}
+        <div class="col">
+            <div class="card">
+                <img class="card-img-top" src="{{ place.image.url }}" />
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">{{ place.name }}</h5>
+                    <p class="card-text">{{ place.description }}</p>
+                    <p>Category: {{ place.category }}</p>
+                    <p>Address: {{ place.adress }}</p>
+                    <p>City: {{ place.city }}</p>
+                    <p>Cost: {{ place.cost }}</p>
+                    {% if place.url %}
+                    <a href="{{ place.url }}" class="btn btn-primary">More Info</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
-
-
+{% endblock %}

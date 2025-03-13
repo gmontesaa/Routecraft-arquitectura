@@ -15,17 +15,19 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path,include
 from places import views as placesviews
 from django.conf import settings
 from django.conf.urls.static import static
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', placesviews.home),  # Ruta para la página principal
+    path('', placesviews.home, name='home'),  # Ruta para la página principal
     path('about/', placesviews.about, name='about'),
     path('ciudades/medellin/', placesviews.medellin, name='medellin'),
     path('ciudades/bogota/', placesviews.bogota, name='bogota'),
     path('ciudades/barranquilla/', placesviews.barranquilla, name='barranquilla'),
+    path('accounts/', include('accounts.urls')),
 ]
 
 
