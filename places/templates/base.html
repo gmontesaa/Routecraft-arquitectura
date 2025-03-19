@@ -27,21 +27,26 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'home' %}">Home</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'medellin' %}">Medellin</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Ciudades
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{% url 'medellin' %}">Medellín</a></li>
+                            <li><a class="dropdown-item" href="{% url 'bogota' %}">Bogotá</a></li>
+                            <li><a class="dropdown-item" href="{% url 'barranquilla' %}">Barranquilla</a></li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'bogota' %}">Bogota</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'barranquilla' %}">Barranquilla</a>
-                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'about' %}">About Us</a>
                     </li>
                     {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'logoutaccount' %}">Logout ({{ user.username }})</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'reviews_page' %}">Reviews Page</a>
                     </li>
                     {% else %}
                     <li class="nav-item">

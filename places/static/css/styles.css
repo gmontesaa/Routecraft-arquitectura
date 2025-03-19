@@ -34,3 +34,12 @@
         padding-left: 20px;
         list-style-position: inside;
     }
+
+footer {
+    position: relative;
+    background: rgba(255, 255, 255, 0.2) !important; /* Fondo semi-transparente */
+    z-index: 3; /* Mayor que el body::before */
+    color: white; /* Asegura que el texto sea visible */
+    padding: 20px;
+    text-align: center;
+}

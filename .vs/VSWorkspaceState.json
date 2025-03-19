@@ -1,14 +1,13 @@
 {
   "ExpandedNodes": [
     "",
-    "\\accounts",
-    "\\accounts\\templates",
     "\\places",
+    "\\places\\static",
     "\\places\\static\\places",
-    "\\places\\static\\places\\images",
+    "\\places\\static\\places\\videos",
     "\\places\\templates",
     "\\routecraft"
   ],
-  "SelectedNode": "\\places\\templates\\base.html",
+  "SelectedNode": "\\places\\static\\places\\videos\\background.mp4",
   "PreviewInSolutionExplorer": false
 }

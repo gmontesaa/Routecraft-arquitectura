@@ -1,15 +1,91 @@
 ﻿{% extends 'base.html' %}
+{% load static %}
 {% block content %}
+
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sobre Nosotros</title>
+    <title>About RouteCraft</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: url('background-image.jpg') no-repeat center center/cover;
+            color: white;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            flex-wrap: wrap;
+            width: 100%;
+            padding: 50px 20px;
+        }
+
+        .card {
+            width: 30%; /* Ajusta el tamaño según necesites */
+            height: 300px; /* Aumenta la altura */
+            padding: 30px;
+            font-size: 1.5rem; /* Aumenta el tamaño del texto */
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .card {
+                width: 80%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Sobre Nosotros</h1>
-    <p>Bienvenido a la p�gina "About" de nuestra aplicaci�n Django.</p>
+
+    <div class="container">
+        <div class="card">
+            <div class="icon">🚀</div>
+            <h2>Project Ideation</h2>
+            <p>RouteCraft was born as a university project at EAFIT, aiming to transform the way travelers discover new places.</p>
+        </div>
+
+        <div class="card">
+            <div class="icon">🤖</div>
+            <h2>AI-Driven Routes</h2>
+            <p>We use Artificial Intelligence to generate personalized routes based on user preferences, budget, and interests.</p>
+        </div>
+
+        <div class="card">
+            <div class="icon">👨‍💻</div>
+            <h2>Meet the Team</h2>
+            <p>We are EAFIT students working on this project as part of the 'Proyecto Integrador' course, bringing innovation to travel planning.</p>
+        </div>
+    </div>
+
 </body>
 </html>
 {% endblock %}

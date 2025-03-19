@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path, include
 from places import views as placesviews
 from django.conf import settings
 from django.conf.urls.static import static
@@ -24,11 +24,20 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', placesviews.home, name='home'),  # Ruta para la página principal
     path('about/', placesviews.about, name='about'),
+    
+    # Rutas para ciudades
     path('ciudades/medellin/', placesviews.medellin, name='medellin'),
     path('ciudades/bogota/', placesviews.bogota, name='bogota'),
     path('ciudades/barranquilla/', placesviews.barranquilla, name='barranquilla'),
+
+    # Rutas para cuentas de usuario
     path('accounts/', include('accounts.urls')),
+
+    # Ruta para agregar reseñas
+    path('add_review/<int:place_id>/<str:city>/', placesviews.add_review, name='add_review'), 
+
+    path('reviews/', placesviews.reviews_page, name='reviews_page'),
 ]
 
-
+# Servir archivos estáticos en modo de desarrollo
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

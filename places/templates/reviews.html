@@ -1,0 +1,28 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center">Buscar Reseñas de Lugares</h1>
+
+    <!-- Barra de búsqueda -->
+    <form method="GET" action="{% url 'reviews_page' %}" class="mb-4">
+        <input type="text" name="search" class="form-control" placeholder="Escribe el nombre del lugar..." value="{{ query }}">
+        <button type="submit" class="btn btn-primary mt-2">Buscar</button>
+    </form>
+
+    {% if reviews %}
+    <h3 class="mt-4">Reseñas para "{{ query }}"</h3>
+    <div class="list-group">
+        {% for review in reviews %}
+        <div class="list-group-item">
+            <h5>{{ review.user_name }} - <span class="text-warning">⭐ {{ review.rating }}</span></h5>
+            <p>{{ review.comment }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">No se encontraron reseñas para este lugar.</p>
+    {% endif %}
+</div>
+{% endblock %}
