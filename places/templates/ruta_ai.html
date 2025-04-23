@@ -1,0 +1,220 @@
+﻿{% extends 'base.html' %}
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route Craft</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #FFFFFF; /* Blanco para claridad y modernidad */
+            color: #222831; /* Texto oscuro para mejor legibilidad */
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #1E88E5; /* Azul Urbano para tecnología y fiabilidad */
+            color: #FFFFFF; /* Texto blanco para contraste */
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 3em; /* Texto más grande para el título */
+        }
+
+        h2 {
+            color: #1E88E5; /* Azul Urbano para énfasis */
+        }
+
+        form {
+            background: #2E8B57; /* Verde Antioqueño para naturaleza y sostenibilidad */
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            color: #FFFFFF; /* Texto blanco para mejor legibilidad */
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input, select, textarea, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        input, select, textarea {
+            background-color: #EEEEEE; /* Gris Neutro para equilibrio visual */
+            color: #333333;
+        }
+
+        button {
+            background-color: #FFC107; /* Amarillo Mango para energía y turismo */
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            button:hover {
+                background-color: #E0A800; /* Amarillo Mango oscuro para interactividad */
+            }
+
+        /* Sección de resultados */
+        #resultados {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .resultado {
+            background-color: #9E9E9E; /* Gris Neutro para claridad */
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: #FFFFFF; /* Texto blanco para mejor contraste */
+        }
+
+            .resultado img {
+                max-width: 300px; /* Imagenes más grandes */
+                height: auto;
+                border-radius: 10px;
+                margin-right: 20px;
+            }
+
+            .resultado h3 {
+                color: #FFC107; /* Amarillo Mango para títulos */
+                margin: 0 0 10px;
+            }
+
+            .resultado p {
+                margin: 5px 0;
+                font-size: 1em; /* Texto ligeramente más grande para mayor claridad */
+            }
+
+            .resultado button {
+                background-color: #2E8B57; /* Verde Antioqueño para botones de acción */
+                color: white;
+                border: none;
+                padding: 10px 15px;
+                border-radius: 5px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+
+                .resultado button:hover {
+                    background-color: #1E88E5; /* Azul Urbano para interactividad */
+                    color: #FFFFFF;
+                }
+
+        footer {
+            background-color: #393E46; /* Gris oscuro para estructura visual */
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Route Craft</h1>
+        <p>Explora y descubre los mejores lugares según tus necesidades</p>
+    </header>
+
+    <form id="rutaForm">
+        <label for="ciudad">Ciudad:</label>
+        <select id="ciudad" name="ciudad" required>
+            <option value="medellin">Medellín</option>
+            <option value="bogota">Bogotá</option>
+            <option value="barranquilla">Barranquilla</option>
+        </select>
+
+        <label for="presupuesto">Presupuesto:</label>
+        <select id="presupuesto" name="presupuesto" required>
+            <option value="todos">Todos</option>
+            <option value="bajo">Bajo</option>
+            <option value="medio">Medio</option>
+            <option value="alto">Alto</option>
+        </select>
+
+        <label for="prompt">Descripción de lo que buscas:</label>
+        <textarea id="prompt" name="prompt" placeholder="Por ejemplo: Quiero explorar sitios culturales y económicos" required></textarea>
+
+        <button type="submit">Buscar</button>
+    </form>
+
+    <div id="resultados">
+        <h2>Resultados</h2>
+        <p>Aquí aparecerán tus recomendaciones personalizadas.</p>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Route Craft - Una experiencia personalizada</p>
+    </footer>
+
+    <script>
+        document.getElementById('rutaForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const ciudad = document.getElementById('ciudad').value;
+            const presupuesto = document.getElementById('presupuesto').value;
+            const prompt = document.getElementById('prompt').value;
+
+            axios.post('/ruta-ai/', {
+                ciudad,
+                presupuesto,
+                prompt
+            }).then(response => {
+                const resultados = response.data.lugares || [];
+                const container = document.getElementById('resultados');
+                container.innerHTML = '<h2>Resultados</h2>';
+
+                if (resultados.length === 0) {
+                    container.innerHTML += '<p>No se encontraron lugares.</p>';
+                } else {
+                    resultados.forEach(lugar => {
+                        const lugarDiv = document.createElement('div');
+                        lugarDiv.className = 'resultado';
+                        lugarDiv.innerHTML = `
+                                <img src="${lugar.image_url}" alt="${lugar.name}">
+                                <div>
+                                    <h3>${lugar.name}</h3>
+                                    <p><strong>Descripción:</strong> ${lugar.description}</p>
+                                    <p><strong>Categoría:</strong> ${lugar.category}</p>
+                                    <p><strong>Ciudad:</strong> ${lugar.city}</p>
+                                    <p><strong>Costo:</strong> $${lugar.cost.toFixed(2)}</p>
+                                    <button onclick="alert('¡Has seleccionado ${lugar.name}!')">Seleccionar</button>
+                                </div>
+                            `;
+                        container.appendChild(lugarDiv);
+                    });
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('Hubo un error al procesar la solicitud.');
+            });
+        });
+    </script>
+</body>
+
+{% endblock %}

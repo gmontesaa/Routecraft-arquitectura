@@ -1,28 +1,66 @@
-﻿{% extends 'base.html' %}
-{% load static %}
+﻿{% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <h1 class="text-center">Buscar Reseñas de Lugares</h1>
+<h1>Reseñas de Lugares</h1>
 
-    <!-- Barra de búsqueda -->
-    <form method="GET" action="{% url 'reviews_page' %}" class="mb-4">
-        <input type="text" name="search" class="form-control" placeholder="Escribe el nombre del lugar..." value="{{ query }}">
-        <button type="submit" class="btn btn-primary mt-2">Buscar</button>
-    </form>
+<input type="text" id="search" placeholder="Buscar un lugar...">
+<button onclick="searchPlaces()">Buscar</button>
 
-    {% if reviews %}
-    <h3 class="mt-4">Reseñas para "{{ query }}"</h3>
-    <div class="list-group">
-        {% for review in reviews %}
-        <div class="list-group-item">
-            <h5>{{ review.user_name }} - <span class="text-warning">⭐ {{ review.rating }}</span></h5>
-            <p>{{ review.comment }}</p>
-        </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <p class="text-muted">No se encontraron reseñas para este lugar.</p>
-    {% endif %}
+<div id="reviews-container">
+    <p>Ingrese un lugar para ver sus reseñas.</p>
 </div>
+
+<script>
+    function searchPlaces() {
+        let query = document.getElementById("search").value.trim();
+        console.log("🔎 Buscando:", query); // Depuración
+
+        fetch(`/search_places/?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("📌 Lugares encontrados:", data); // Depuración
+
+                if (data.length > 0) {
+                    let placeId = data[0].id;
+                    console.log("✅ placeId seleccionado:", placeId); // Depuración
+                    getReviews(placeId);
+                } else {
+                    document.getElementById("reviews-container").innerHTML = "<p>No se encontraron lugares.</p>";
+                }
+            })
+            .catch(error => {
+                console.error("❌ Error en la búsqueda:", error);
+                document.getElementById("reviews-container").innerHTML = "<p>Error al buscar lugares.</p>";
+            });
+    }
+
+    function getReviews(placeId) {
+        fetch(`/reviews/${placeId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById("reviews-container").innerHTML = `<p>${data.error}</p>`;
+                    return;
+                }
+
+                let reviewsHtml = `<h2>Reseñas de ${data.place}</h2>`;
+                reviewsHtml += `<p>Calificación promedio: ${data.avg_rating}/5</p>`;
+
+                if (data.reviews.length === 0) {
+                    reviewsHtml += "<p>No hay reseñas para este lugar.</p>";
+                } else {
+                    data.reviews.forEach(review => {
+                        reviewsHtml += `<p><strong>${review.user}:</strong> ${review.comment} - ${review.rating}/5</p>`;
+                    });
+                }
+
+                document.getElementById("reviews-container").innerHTML = reviewsHtml;
+            })
+            .catch(error => {
+                console.error("❌ Error al obtener reseñas:", error);
+                document.getElementById("reviews-container").innerHTML = "<p>Error al cargar reseñas.</p>";
+            });
+    }
+</script>
 {% endblock %}
+

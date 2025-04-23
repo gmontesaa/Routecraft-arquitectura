@@ -1,93 +1,46 @@
-﻿import requests
-from django.db import models
-
-# Create your models here.
-
-import requests
-from django.db import models
-
-from django.db import models
-import requests
-
-from django.db import models
+﻿from django.db import models
 
 
-
-	
 class Place(models.Model):
+    CITY_CHOICES = [
+        ('medellin', 'Medellín'),
+        ('bogota', 'Bogotá'),
+        ('barranquilla', 'Barranquilla'),
+    ]
+
     name = models.CharField(max_length=255)
     description = models.TextField()
     category = models.CharField(max_length=100)
     address = models.CharField(max_length=255, default="Dirección no especificada")
-    city = models.CharField(max_length=100)
+    city = models.CharField(max_length=20, choices=CITY_CHOICES)
     cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     url = models.URLField(blank=True, null=True)
     image = models.ImageField(upload_to='places/images/', null=True, blank=True)
-    
-    # Permitir ingresar las coordenadas manualmente
+
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
 
-    def __str__(self):
-        return self.name
+    embedding = models.JSONField(null=True, blank=True)
 
 
+    def average_rating(self):
+        reviews = self.reviews.all()
+        if reviews:
+            return sum(r.rating for r in reviews) / len(reviews)
+        return 0
 
-from django.db import models
-
-class Bog(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    category = models.CharField(max_length=100)
-    address = models.CharField(max_length=255, default="Dirección no especificada")
-    city = models.CharField(max_length=100)
-    cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    url = models.URLField(blank=True, null=True)
-    image = models.ImageField(upload_to='places/images/', null=True, blank=True)
-    
-    # Permitir ingresar las coordenadas manualmente
-    latitude = models.FloatField(null=True, blank=True)
-    longitude = models.FloatField(null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} - {self.get_city_display()}"
 
-
-class Barr(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    category = models.CharField(max_length=100)
-    address = models.CharField(max_length=255, default="Dirección no especificada")
-    city = models.CharField(max_length=100)
-    cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    url = models.URLField(blank=True, null=True)
-    image = models.ImageField(upload_to='places/images/', null=True, blank=True)
-    
-    # Permitir ingresar las coordenadas manualmente
-    latitude = models.FloatField(null=True, blank=True)
-    longitude = models.FloatField(null=True, blank=True)
-
-    def __str__(self):
-        return self.name
 
 
 class Review(models.Model):
-    place = models.ForeignKey('Place', on_delete=models.CASCADE, related_name='reviews', null=True, blank=True)
-    bog = models.ForeignKey('Bog', on_delete=models.CASCADE, related_name='reviews', null=True, blank=True)
-    barr = models.ForeignKey('Barr', on_delete=models.CASCADE, related_name='reviews', null=True, blank=True)
-    user_name = models.CharField(max_length=255)
-    rating = models.PositiveIntegerField()  # Escala de 1 a 5
+    place = models.ForeignKey(Place, on_delete=models.CASCADE, related_name="reviews")
+    user = models.CharField(max_length=100, default="Anónimo")
     comment = models.TextField()
+    rating = models.IntegerField()  # Suponiendo una calificación de 1 a 5
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user_name} - {self.rating}/5 en {self.get_place_name()}"
-
-    def get_place_name(self):
-        if self.place:
-            return self.place.name
-        elif self.bog:
-            return self.bog.name
-        elif self.barr:
-            return self.barr.name
-        return "Otro"
+        return f"Reseña de {self.user} en {self.place.name}"

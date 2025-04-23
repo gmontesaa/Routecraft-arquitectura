@@ -20,23 +20,22 @@ from places import views as placesviews
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', placesviews.home, name='home'),  # Ruta para la página principal
+    path('', placesviews.home, name='home'),
     path('about/', placesviews.about, name='about'),
     
-    # Rutas para ciudades
-    path('ciudades/medellin/', placesviews.medellin, name='medellin'),
-    path('ciudades/bogota/', placesviews.bogota, name='bogota'),
-    path('ciudades/barranquilla/', placesviews.barranquilla, name='barranquilla'),
-
-    # Rutas para cuentas de usuario
+    # Rutas para funciones específicas
     path('accounts/', include('accounts.urls')),
+    path("search_places/", placesviews.search_places, name="search_places"),
+    path("reviews/<int:place_id>/", placesviews.get_reviews, name="get_reviews"),
+  
+    path("reviews/", placesviews.reviews_page, name="reviews_page"),
+    path('ruta-ai/', placesviews.ruta_ai_view, name='ruta_ai'), 
 
-    # Ruta para agregar reseñas
-    path('add_review/<int:place_id>/<str:city>/', placesviews.add_review, name='add_review'), 
-
-    path('reviews/', placesviews.reviews_page, name='reviews_page'),
+    # ESTA VA AL FINAL
+    path('<str:city_name>/', placesviews.city_places, name='city_places'),
 ]
 
 # Servir archivos estáticos en modo de desarrollo

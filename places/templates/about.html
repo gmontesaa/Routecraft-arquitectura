@@ -2,90 +2,186 @@
 {% load static %}
 {% block content %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About RouteCraft</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
+<style>
+    :root {
+        --verde-antioqueno: #2E8B57;
+        --amarillo-mango: #FFC107;
+        --azul-urbano: #1E88E5;
+        --gris-neutro: #9E9E9E;
+    }
+
+    .about-container {
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('{% static "places/images/logo.png" %}') no-repeat center center/cover;
+        min-height: 100vh;
+        padding: 60px 20px;
+        color: white;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .header-section {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+        .header-section img {
+            height: 120px;
+            margin-bottom: 20px;
         }
 
-        body {
-            background: url('background-image.jpg') no-repeat center center/cover;
-            color: white;
-            text-align: center;
+        .header-section h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--amarillo-mango);
+            font-weight: 700;
         }
 
-        .container {
-            display: flex;
-            justify-content: space-evenly;
-            align-items: center;
-            flex-wrap: wrap;
-            width: 100%;
-            padding: 50px 20px;
+        .header-section p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            font-family: 'Roboto', sans-serif;
         }
 
-        .card {
-            width: 30%; /* Ajusta el tamaño según necesites */
-            height: 300px; /* Aumenta la altura */
-            padding: 30px;
-            font-size: 1.5rem; /* Aumenta el tamaño del texto */
-            text-align: center;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            border-radius: 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    .cards-container {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .mission-card {
+        background-color: rgba(46, 139, 87, 0.9);
+        border-left: 5px solid var(--amarillo-mango);
+    }
+
+    .vision-card {
+        background-color: rgba(30, 136, 229, 0.9);
+        border-left: 5px solid var(--verde-antioqueno);
+    }
+
+    .values-card {
+        background-color: rgba(255, 193, 7, 0.9);
+        border-left: 5px solid var(--azul-urbano);
+        color: #333;
+    }
+
+    .team-card {
+        background-color: rgba(158, 158, 158, 0.9);
+        border-left: 5px solid var(--amarillo-mango);
+    }
+
+    .info-card {
+        flex: 1;
+        min-width: 300px;
+        max-width: 400px;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        transition: transform 0.3s;
+    }
+
+        .info-card:hover {
+            transform: translateY(-10px);
         }
 
-        .icon {
+    .card-icon {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        display: inline-block;
+    }
+
+    .card-title {
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+
+    .card-content {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    .slogan-section {
+        text-align: center;
+        margin: 50px auto;
+        padding: 20px;
+        max-width: 800px;
+        font-style: italic;
+        font-size: 1.5rem;
+        color: var(--amarillo-mango);
+        border-top: 2px solid var(--azul-urbano);
+        border-bottom: 2px solid var(--azul-urbano);
+    }
+
+    @media (max-width: 768px) {
+        .info-card {
+            min-width: 100%;
+        }
+
+        .header-section h1 {
             font-size: 2rem;
-            margin-bottom: 10px;
         }
+    }
+</style>
 
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
+<div class="about-container">
+    <div class="header-section">
+        <img src="{% static 'places/images/logo.png' %}" alt="RouteCraft Logo">
+        <h1>SOBRE NOSOTROS</h1>
+        <p>Transformando la experiencia turística a través de la innovación y tecnología</p>
+    </div>
 
-            .card {
-                width: 80%;
-                margin-bottom: 20px;
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <div class="card">
-            <div class="icon">🚀</div>
-            <h2>Project Ideation</h2>
-            <p>RouteCraft was born as a university project at EAFIT, aiming to transform the way travelers discover new places.</p>
+    <div class="cards-container">
+        <div class="info-card mission-card">
+            <div class="card-icon">🌱</div>
+            <h2 class="card-title">Misión</h2>
+            <p class="card-content">
+                Facilitar experiencias turísticas únicas y personalizadas en Medellín mediante inteligencia artificial,
+                optimizando tiempo de viaje, promoviendo el comercio local y garantizando accesibilidad para todos los viajeros.
+            </p>
         </div>
 
-        <div class="card">
-            <div class="icon">🤖</div>
-            <h2>AI-Driven Routes</h2>
-            <p>We use Artificial Intelligence to generate personalized routes based on user preferences, budget, and interests.</p>
+        <div class="info-card vision-card">
+            <div class="card-icon">🚀</div>
+            <h2 class="card-title">Visión</h2>
+            <p class="card-content">
+                Ser la aplicación líder en turismo inteligente en Latinoamérica, reconocida por conectar viajeros con
+                destinos auténticos, experiencias relevantes y servicios locales de manera sostenible, eficiente e inclusiva.
+            </p>
         </div>
 
-        <div class="card">
-            <div class="icon">👨‍💻</div>
-            <h2>Meet the Team</h2>
-            <p>We are EAFIT students working on this project as part of the 'Proyecto Integrador' course, bringing innovation to travel planning.</p>
+        <div class="info-card values-card">
+            <div class="card-icon">💡</div>
+            <h2 class="card-title">Nuestros Valores</h2>
+            <p class="card-content">
+                • Innovación constante<br>
+                • Sostenibilidad turística<br>
+                • Inclusión y accesibilidad<br>
+                • Conexión auténtica con lo local<br>
+                • Experiencias personalizadas
+            </p>
+        </div>
+
+        <div class="info-card team-card">
+            <div class="card-icon">👨‍💻</div>
+            <h2 class="card-title">El Equipo</h2>
+            <p class="card-content">
+                Somos estudiantes de EAFIT desarrollando este proyecto como parte del curso 'Proyecto Integrador',
+                combinando nuestras habilidades en programación, diseño e inteligencia artificial para revolucionar
+                la planificación de viajes.
+            </p>
         </div>
     </div>
 
-</body>
-</html>
+    <div class="slogan-section">
+        "Explora tu mundo, nosotros trazamos el camino."
+    </div>
+</div>
+
+<!-- Añade las fuentes de Google -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto&family=Open+Sans&display=swap" rel="stylesheet">
+
 {% endblock %}

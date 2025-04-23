@@ -110,27 +110,6 @@
                         {% if place.url %}
                         <a href="{{ place.url }}" class="btn btn-primary">More Info</a>
                         {% endif %}
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#reviewModal{{ place.id }}">Add review</button>
-                    </div>
-                </div>
-            </div>
-            <div class="modal fade" id="reviewModal{{ place.id }}" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" style="color: green;">Add review to {{ place.name }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form class="review-form" data-place-id="{{ place.id }}">
-                                {% csrf_token %}
-                                <input type="text" name="user_name" class="form-control" placeholder="Your name" required>
-                                <input type="number" name="rating" class="form-control" min="1" max="5" placeholder="Punctuation (1-5)" required>
-                                <textarea name="comment" class="form-control" placeholder="Write comments" required></textarea>
-                                <button type="submit" class="btn btn-primary mt-2">Send Review</button>
-                                <p class="success-message text-success mt-2" style="display:none;">¡You have send your review!</p>
-                            </form>
-                        </div>
                     </div>
                 </div>
             </div>

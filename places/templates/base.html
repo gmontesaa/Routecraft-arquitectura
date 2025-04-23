@@ -7,18 +7,20 @@
     <title>RouteCraft</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <!-- NUEVO: Añadir animate.css para animaciones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 </head>
 <body>
 
-    <!-- NAVBAR -->
+
+    <!-- NAVBAR (Versión original que ya tenías) -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'home' %}">
-                <img src="{% static 'places/images/home.png' %}" alt="" width="30" height="24"
+                <img src="{% static 'places/images/logo.png' %}" alt="" width="30" height="24"
                      class="d-inline-block align-text-top">
                 RouteCraft
             </a>
-
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -32,12 +34,11 @@
                             Ciudades
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="{% url 'medellin' %}">Medellín</a></li>
-                            <li><a class="dropdown-item" href="{% url 'bogota' %}">Bogotá</a></li>
-                            <li><a class="dropdown-item" href="{% url 'barranquilla' %}">Barranquilla</a></li>
+                            <li><a class="dropdown-item" href="{% url 'city_places' city_name='medellin' %}">Medellín</a></li>
+                            <li><a class="dropdown-item" href="{% url 'city_places' city_name='bogota' %}">Bogotá</a></li>
+                            <li><a class="dropdown-item" href="{% url 'city_places' city_name='barranquilla' %}">Barranquilla</a></li>
                         </ul>
                     </li>
-
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'about' %}">About Us</a>
                     </li>
@@ -45,8 +46,8 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'logoutaccount' %}">Logout ({{ user.username }})</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'reviews_page' %}">Reviews Page</a>
+                    <li>
+                        <a class="nav-link" href="{% url 'reviews_page' %}">Reviews</a>
                     </li>
                     {% else %}
                     <li class="nav-item">
@@ -59,13 +60,64 @@
                 </ul>
             </div>
         </div>
+
     </nav>
 
-    <!-- DYNAMIC CONTENT -->
+    <!-- DYNAMIC CONTENT (sin cambios) -->
     <div class="container mt-4">
         {% block content %}
         {% endblock %}
     </div>
+
+    <div class="chatbot-container">
+        <button id="chatbot-trigger" class="chatbot-btn">
+            <img src="{% static 'places/images/chatbot-icon.png' %}" alt="Asistente" width="40">
+        </button>
+
+        <div id="chatbot-window" class="chatbot-window">
+            <div class="chatbot-header bg-primary text-white">
+                <h5 class="mb-0">Asistente de Rutas</h5>
+                <button id="chatbot-close" class="btn btn-sm btn-light">×</button>
+            </div>
+            <div id="chatbot-messages" class="chatbot-messages">
+                <div class="chatbot-msg bot-msg">
+                    ¡Hola! 👋 ¿Quieres que te ayude a crear una ruta personalizada?
+                </div>
+            </div>
+            <div class="chatbot-input p-2">
+                <button id="start-ruta-btn" class="btn btn-primary btn-block">¡Sí, adelante!</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Tus estilos existentes más estos ajustes */
+        .chatbot-container {
+            z-index: 1030; /* Mayor que el navbar (que usa 1020) */
+        }
+    </style>
+
+    <script>
+        // Código corregido con manejo de errores
+        document.addEventListener('DOMContentLoaded', function () {
+            const startBtn = document.getElementById('start-ruta-btn');
+
+            startBtn.addEventListener('click', function () {
+                fetch("{% url 'ruta_ai' %}")
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.href = "{% url 'ruta_ai' %}";
+                        } else {
+                            throw new Error('Error en la redirección');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('No se pudo cargar la página de rutas. Por favor intenta nuevamente.');
+                    });
+            });
+        });
+    </script>
 
     <footer class="text-center text-lg-start bg-light text-muted mt-4">
         <div class="container">
@@ -76,6 +128,103 @@
             </div>
         </div>
     </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- NUEVO: Estilos del chatbot -->
+    <style>
+        .chatbot-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .chatbot-btn {
+            background: #4e73df;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .chatbot-btn:hover {
+                transform: scale(1.1);
+            }
+
+        .chatbot-window {
+            display: none;
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            width: 300px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .chatbot-header {
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-messages {
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .chatbot-msg {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 18px;
+            max-width: 80%;
+        }
+
+        .bot-msg {
+            background: white;
+            border: 1px solid #ddd;
+            margin-right: auto;
+        }
+    </style>
+
+    <!-- NUEVO: JavaScript del chatbot -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const trigger = document.getElementById('chatbot-trigger');
+            const window = document.getElementById('chatbot-window');
+            const closeBtn = document.getElementById('chatbot-close');
+            const startBtn = document.getElementById('start-ruta-btn');
+
+            // Animación inicial
+            setTimeout(() => {
+                trigger.classList.add('animate__animated', 'animate__bounceIn');
+            }, 1000);
+
+            // Mostrar/ocultar chatbot
+            trigger.addEventListener('click', function () {
+                window.style.display = window.style.display === 'block' ? 'none' : 'block';
+            });
+
+            closeBtn.addEventListener('click', function () {
+                window.style.display = 'none';
+            });
+
+            // Redirigir a ruta-ai
+            startBtn.addEventListener('click', function () {
+                window.location.href = "{% url 'ruta_ai' %}";
+            });
+        });
+    </script>
 </body>
 </html>
