@@ -2,3 +2,8 @@ django
 Pillow
 pandas
 matplotlib
+python-decouple
+python-dotenv
+openai==0.28.1
+numpy
+requests
