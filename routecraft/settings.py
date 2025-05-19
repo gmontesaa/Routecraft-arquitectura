@@ -12,6 +12,18 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from decouple import config
 from pathlib import Path
 import os 
+from dotenv import load_dotenv
+
+
+# Ruta base del proyecto (la carpeta donde está manage.py)
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Cargar variables del archivo .env
+load_dotenv(dotenv_path=BASE_DIR / '.env')
+
+# Leer la variable
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,7 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'places','accounts',
+    'places','accounts','events'
 ]
 
 MIDDLEWARE = [
@@ -132,6 +144,7 @@ HANDLER404 = 'places.views.error_404_view'
 
 OPENAI_API_KEY = config('OPENAI_API_KEY')
 
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -154,3 +167,4 @@ LOGGING = {
         },
     },
 }
+

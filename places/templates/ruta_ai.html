@@ -7,214 +7,315 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Route Craft</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}"></script>
     <style>
-        /* Estilos generales */
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #FFFFFF; /* Blanco para claridad y modernidad */
-            color: #222831; /* Texto oscuro para mejor legibilidad */
             margin: 0;
-            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f8fb;
+            color: #333;
         }
 
         header {
-            background-color: #1E88E5; /* Azul Urbano para tecnología y fiabilidad */
-            color: #FFFFFF; /* Texto blanco para contraste */
-            padding: 20px;
+            background: linear-gradient(to right, #1e3c72, #2a5298);
+            color: white;
+            padding: 1rem 2rem;
             text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         h1 {
             margin: 0;
-            font-size: 3em; /* Texto más grande para el título */
+            font-size: 2rem;
+            animation: fadeInDown 1s ease-out;
         }
 
-        h2 {
-            color: #1E88E5; /* Azul Urbano para énfasis */
-        }
-
-        form {
-            background: #2E8B57; /* Verde Antioqueño para naturaleza y sostenibilidad */
-            max-width: 600px;
-            margin: 30px auto;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
-            color: #FFFFFF; /* Texto blanco para mejor legibilidad */
-        }
-
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 15px;
-        }
-
-        input, select, textarea, button {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        input, select, textarea {
-            background-color: #EEEEEE; /* Gris Neutro para equilibrio visual */
-            color: #333333;
-        }
-
-        button {
-            background-color: #FFC107; /* Amarillo Mango para energía y turismo */
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-            button:hover {
-                background-color: #E0A800; /* Amarillo Mango oscuro para interactividad */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
             }
 
-        /* Sección de resultados */
-        #resultados {
-            max-width: 900px;
-            margin: 30px auto;
-            padding: 20px;
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        main {
+            padding: 2rem;
+        }
+
+        .form-section {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            max-width: 700px;
+            margin: 2rem auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            animation: fadeIn 1s ease-in;
+        }
+
+            .form-section form {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .form-section label {
+                font-weight: 600;
+                color: #2c3e50;
+            }
+
+            .form-section input,
+            .form-section select,
+            .form-section textarea {
+                width: 100%;
+                padding: 0.75rem;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                font-size: 1rem;
+            }
+
+            .form-section button {
+                align-self: flex-end;
+                background-color: #2980b9;
+                color: white;
+                border: none;
+                padding: 0.8rem 1.5rem;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 1rem;
+                transition: all 0.3s ease;
+            }
+
+                .form-section button:hover {
+                    background-color: #1c5980;
+                    transform: translateY(-2px);
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+                }
+
+
+        .map-container {
+            margin-top: 2rem;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            animation: fadeIn 1s ease-in 0.3s;
+        }
+
+        #map {
+            width: 100%;
+            height: 500px;
+        }
+
+        .tiempo-estimado {
+            background-color: #e8f4ff;
+            border-left: 5px solid #2980b9;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #2c3e50;
+            max-width: 500px;
+            margin: 1.5rem auto;
+            text-align: center;
+            animation: fadeIn 0.6s ease-in-out;
+            transition: all 0.3s ease-in-out;
+        
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .resultado {
-            background-color: #9E9E9E; /* Gris Neutro para claridad */
-            margin: 20px 0;
-            padding: 20px;
-            border-radius: 15px;
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             display: flex;
+            gap: 1rem;
             align-items: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            color: #FFFFFF; /* Texto blanco para mejor contraste */
         }
 
             .resultado img {
-                max-width: 300px; /* Imagenes más grandes */
+                width: 120px;
                 height: auto;
-                border-radius: 10px;
-                margin-right: 20px;
+                border-radius: 8px;
+                object-fit: cover;
             }
 
-            .resultado h3 {
-                color: #FFC107; /* Amarillo Mango para títulos */
-                margin: 0 0 10px;
+            .resultado div {
+                flex: 1;
             }
-
-            .resultado p {
-                margin: 5px 0;
-                font-size: 1em; /* Texto ligeramente más grande para mayor claridad */
-            }
-
-            .resultado button {
-                background-color: #2E8B57; /* Verde Antioqueño para botones de acción */
-                color: white;
-                border: none;
-                padding: 10px 15px;
-                border-radius: 5px;
-                font-weight: bold;
-                cursor: pointer;
-                transition: background-color 0.3s ease;
-            }
-
-                .resultado button:hover {
-                    background-color: #1E88E5; /* Azul Urbano para interactividad */
-                    color: #FFFFFF;
-                }
 
         footer {
-            background-color: #393E46; /* Gris oscuro para estructura visual */
-            color: white;
             text-align: center;
-            padding: 15px 0;
-            margin-top: 30px;
+            padding: 1rem;
+            background-color: #f0f0f0;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #777;
         }
     </style>
+    
 </head>
+
 <body>
     <header>
         <h1>Route Craft</h1>
         <p>Explora y descubre los mejores lugares según tus necesidades</p>
     </header>
+    <div class="form-section">
+        <form id="rutaForm">
+            <label for="ciudad">Ciudad:</label>
+            <select id="ciudad" name="ciudad" required>
+                <option value="medellin">Medellín</option>
+                <option value="bogota">Bogotá</option>
+                <option value="barranquilla">Barranquilla</option>
+            </select>
 
-    <form id="rutaForm">
-        <label for="ciudad">Ciudad:</label>
-        <select id="ciudad" name="ciudad" required>
-            <option value="medellin">Medellín</option>
-            <option value="bogota">Bogotá</option>
-            <option value="barranquilla">Barranquilla</option>
-        </select>
+            <label for="presupuesto">Presupuesto:</label>
+            <select id="presupuesto" name="presupuesto" required>
+                <option value="todos">Todos</option>
+                <option value="bajo">Bajo</option>
+                <option value="medio">Medio</option>
+                <option value="alto">Alto</option>
+            </select>
 
-        <label for="presupuesto">Presupuesto:</label>
-        <select id="presupuesto" name="presupuesto" required>
-            <option value="todos">Todos</option>
-            <option value="bajo">Bajo</option>
-            <option value="medio">Medio</option>
-            <option value="alto">Alto</option>
-        </select>
+            <label for="prompt">Descripción de lo que buscas:</label>
+            <textarea id="prompt" name="prompt" placeholder="Por ejemplo: Quiero explorar sitios culturales y económicos" required></textarea>
 
-        <label for="prompt">Descripción de lo que buscas:</label>
-        <textarea id="prompt" name="prompt" placeholder="Por ejemplo: Quiero explorar sitios culturales y económicos" required></textarea>
-
-        <button type="submit">Buscar</button>
-    </form>
-
-    <div id="resultados">
-        <h2>Resultados</h2>
-        <p>Aquí aparecerán tus recomendaciones personalizadas.</p>
+            <button type="submit">Buscar</button>
+        </form>
     </div>
+            <div id="resultados">
+                <h2>Resultados</h2>
+                <p>Aquí aparecerán tus recomendaciones personalizadas.</p>
+            </div>
 
-    <footer>
-        <p>&copy; 2025 Route Craft - Una experiencia personalizada</p>
-    </footer>
+            <div id="duracion_total" class="tiempo-estimado">
+                Tiempo estimado: 0 minutos
+            </div>
+            <div id="map" style="height: 500px;"></div>
 
-    <script>
-        document.getElementById('rutaForm').addEventListener('submit', function (e) {
-            e.preventDefault();
+            <footer>
+                <p>&copy; 2025 Route Craft - Una experiencia personalizada</p>
+            </footer>
 
-            const ciudad = document.getElementById('ciudad').value;
-            const presupuesto = document.getElementById('presupuesto').value;
-            const prompt = document.getElementById('prompt').value;
+            <script>
+                let map, directionsService, directionsRenderer;
 
-            axios.post('/ruta-ai/', {
-                ciudad,
-                presupuesto,
-                prompt
-            }).then(response => {
-                const resultados = response.data.lugares || [];
-                const container = document.getElementById('resultados');
-                container.innerHTML = '<h2>Resultados</h2>';
+                document.getElementById('rutaForm').addEventListener('submit', function (e) {
+                    e.preventDefault();
 
-                if (resultados.length === 0) {
-                    container.innerHTML += '<p>No se encontraron lugares.</p>';
-                } else {
-                    resultados.forEach(lugar => {
-                        const lugarDiv = document.createElement('div');
-                        lugarDiv.className = 'resultado';
-                        lugarDiv.innerHTML = `
-                                <img src="${lugar.image_url}" alt="${lugar.name}">
-                                <div>
-                                    <h3>${lugar.name}</h3>
-                                    <p><strong>Descripción:</strong> ${lugar.description}</p>
-                                    <p><strong>Categoría:</strong> ${lugar.category}</p>
-                                    <p><strong>Ciudad:</strong> ${lugar.city}</p>
-                                    <p><strong>Costo:</strong> $${lugar.cost.toFixed(2)}</p>
-                                    <button onclick="alert('¡Has seleccionado ${lugar.name}!')">Seleccionar</button>
-                                </div>
-                            `;
-                        container.appendChild(lugarDiv);
+                    const ciudad = document.getElementById('ciudad').value;
+                    const presupuesto = document.getElementById('presupuesto').value;
+                    const prompt = document.getElementById('prompt').value;
+
+                    axios.post('/ruta-ai/', { ciudad, presupuesto, prompt })
+                        .then(response => {
+                            const lugares = response.data.lugares || [];
+                            const lugares_ids = lugares.map(l => l.id);
+
+                            if (lugares.length === 0) {
+                                alert("No se encontraron lugares.");
+                                return;
+                            }
+
+                            mostrarResultados(lugares);
+                            obtenerRutaGoogleMaps(lugares_ids, lugares);
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Hubo un error al procesar la solicitud.');
+                        });
+                });
+
+                function obtenerRutaGoogleMaps(lugares_ids, lugares) {
+                    axios.post("/obtener-ruta-google/", { lugares_ids })
+                        .then(response => {
+                            const ruta = response.data.ruta;
+                            const duracionTotal = response.data.duracion_total;
+
+                            const tiempoDiv = document.getElementById("duracion_total");
+                            tiempoDiv.innerHTML = `⏱️ Tiempo estimado: <strong>${Math.round(duracionTotal)} minutos</strong>`;
+
+                            mostrarMapaConRuta(lugares, ruta);
+                        })
+                        .catch(error => {
+                            console.error("Error obteniendo la ruta:", error);
+                        });
+                }
+
+                function mostrarResultados(lugares) {
+                    const contenedor = document.getElementById("resultados");
+                    contenedor.innerHTML = "<h2>Resultados</h2>";
+
+                    lugares.forEach(lugar => {
+                        const div = document.createElement("div");
+                        div.className = "resultado";
+
+                        div.innerHTML = `
+                                            <img src="${lugar.image_url}" alt="Imagen de ${lugar.name}">
+                                            <div>
+                                                <h3>${lugar.name}</h3>
+                                                <p><strong>Dirección:</strong> ${lugar.address}</p>
+                                                <p><strong>Descripción:</strong> ${lugar.description}</p>
+                                                <p><strong>Precio:</strong> ${lugar.cost}</p>
+                                            </div>
+                                        `;
+
+                        contenedor.appendChild(div);
                     });
                 }
-            }).catch(error => {
-                console.error('Error:', error);
-                alert('Hubo un error al procesar la solicitud.');
-            });
-        });
-    </script>
+
+                function mostrarMapaConRuta(lugares, ruta) {
+                    if (!map) {
+                        map = new google.maps.Map(document.getElementById("map"), {
+                            zoom: 13,
+                            center: { lat: lugares[0].latitude, lng: lugares[0].longitude }
+                        });
+                    }
+
+                    if (!directionsService) {
+                        directionsService = new google.maps.DirectionsService();
+                        directionsRenderer = new google.maps.DirectionsRenderer();
+                        directionsRenderer.setMap(map);
+                    }
+
+                    const waypoints = lugares.slice(1, -1).map(lugar => ({
+                        location: new google.maps.LatLng(lugar.latitude, lugar.longitude),
+                        stopover: true
+                    }));
+
+                    const request = {
+                        origin: new google.maps.LatLng(lugares[0].latitude, lugares[0].longitude),
+                        destination: new google.maps.LatLng(lugares[lugares.length - 1].latitude, lugares[lugares.length - 1].longitude),
+                        waypoints: waypoints,
+                        travelMode: google.maps.TravelMode.DRIVING
+                    };
+
+                    directionsService.route(request, function (result, status) {
+                        if (status === google.maps.DirectionsStatus.OK) {
+                            directionsRenderer.setDirections(result);
+                        } else {
+                            console.error("Error generando la ruta:", status);
+                        }
+                    });
+                }
+            </script>
 </body>
 
 {% endblock %}

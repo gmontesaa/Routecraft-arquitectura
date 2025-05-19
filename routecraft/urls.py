@@ -33,6 +33,9 @@ urlpatterns = [
   
     path("reviews/", placesviews.reviews_page, name="reviews_page"),
     path('ruta-ai/', placesviews.ruta_ai_view, name='ruta_ai'), 
+    path('obtener-ruta-google/', placesviews.obtener_ruta_google_maps, name='obtener_ruta_google'),
+    path('events/',include('events.urls')),
+
 
     # ESTA VA AL FINAL
     path('<str:city_name>/', placesviews.city_places, name='city_places'),

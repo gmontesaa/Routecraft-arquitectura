@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .carousel-container {
+        overflow: hidden;
+        position: relative;
+        padding: 20px 0;
+    }
+
+    .carousel-track {
+        display: flex;
+        gap: 1rem;
+        animation: scroll-left 30s linear infinite;
+        width: max-content;
+    }
+
+    .carousel-container:hover .carousel-track {
+        animation-play-state: paused;
+    }
+
+    .carousel-card {
+        flex: 0 0 auto;
+        width: 300px;
+        height: 450px;
+        overflow: hidden;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-img-top {
+        height: 180px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .card-body {
+        flex: 1;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        white-space: normal;
+        overflow: hidden;
+        max-height: 150px;
+    }
+
+    .card-text {
+        font-size: 0.95rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .card-footer {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+        background-color: #f8f9fa;
+    }
+
+    @keyframes scroll-left {
+        0% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+</style>
+
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Proximos Eventos</h1>
+
+    <div class="carousel-container">
+        <div class="carousel-track">
+            {% for event in eventss %}
+            <div class="card carousel-card">
+                {% if event.imagen %}
+                <img src="{{ event.imagen.url }}" class="card-img-top" alt="{{ event.Nombre_Evento }}">
+                {% else %}
+                <img src="{% static 'default_event.jpg' %}" class="card-img-top" alt="Imagen por defecto">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ event.Nombre_Evento }}</h5>
+                    <p class="card-text">{{ event.Resumen|truncatewords:20 }}</p>
+                </div>
+                <div class="card-footer text-muted">
+                    {{ event.Ciudad }} | {{ event.fecha }}
+                </div>
+            </div>
+            {% endfor %}
+
+            {# Duplicacion para scroll infinito si hay pocos eventos #}
+            {% if eventss|length <= 5 %}
+            {% for event in eventss %}
+            <div class="card carousel-card">
+                {% if event.imagen %}
+                <img src="{{ event.imagen.url }}" class="card-img-top" alt="{{ event.Nombre_Evento }}">
+                {% else %}
+                <img src="{% static 'default_event.jpg' %}" class="card-img-top" alt="Imagen por defecto">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ event.Nombre_Evento }}</h5>
+                    <p class="card-text">{{ event.Resumen|truncatewords:20 }}</p>
+                </div>
+                <div class="card-footer text-muted">
+                    {{ event.Ciudad }} | {{ event.fecha }}
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
