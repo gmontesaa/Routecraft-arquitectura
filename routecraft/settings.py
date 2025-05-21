@@ -12,17 +12,14 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from decouple import config
 from pathlib import Path
 import os 
-from dotenv import load_dotenv
 
 
-# Ruta base del proyecto (la carpeta donde est� manage.py)
+# Ruta base del proyecto (la carpeta donde está manage.py)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Cargar variables del archivo .env
-load_dotenv(dotenv_path=BASE_DIR / '.env')
+# Leer las variables de entorno con decouple
+GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY')
 
-# Leer la variable
-GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -131,7 +128,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = [os.path.join(BASE_DIR, 'staticfiles')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -161,10 +158,9 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        'places': {  # Para tu aplicaci�n
+        'places': {  # Para tu aplicación
             'handlers': ['file'],
             'level': 'DEBUG',
         },
     },
 }
-
