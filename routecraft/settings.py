@@ -15,7 +15,7 @@ import os
 from dotenv import load_dotenv
 
 
-# Ruta base del proyecto (la carpeta donde está manage.py)
+# Ruta base del proyecto (la carpeta donde estï¿½ manage.py)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Cargar variables del archivo .env
@@ -39,7 +39,7 @@ SECRET_KEY = 'django-insecure-!23xxb+!dh@o=-)no6-5uha2thm@p*2a=+btgqr&$++1fou=de
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['3.86.163.195']
 
 
 # Application definition
@@ -161,7 +161,7 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        'places': {  # Para tu aplicación
+        'places': {  # Para tu aplicaciï¿½n
             'handlers': ['file'],
             'level': 'DEBUG',
         },
