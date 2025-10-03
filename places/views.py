@@ -4,7 +4,7 @@ from .models import Place, Review
 from django.db.models import Avg, Q
 from django.views.decorators.csrf import csrf_exempt
 import json
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
 from django.conf import settings
 import os
@@ -15,16 +15,16 @@ import requests
 import numpy as np
 
 
-
-
 def home(request):
     return render(request, 'home.html')
+
 
 def about(request):
     return render(request, 'about.html')
 
+
 def city_places(request, city_name):
-    VALID_CITIES = ["medellin", "bogota", "barranquilla"]  
+    VALID_CITIES = ["medellin", "bogota", "barranquilla"]
 
     searchTerm = request.GET.get('searchPlace', '')
     places = Place.objects.filter(city=city_name)
@@ -33,8 +33,10 @@ def city_places(request, city_name):
 
     return render(request, f'{city_name}.html', {'searchTerm': searchTerm, 'places': places})
 
+
 def reviews_page(request):
     return render(request, "reviews.html")
+
 
 def search_places(request):
     query = request.GET.get("q", "").strip()
@@ -53,6 +55,7 @@ def search_places(request):
 
     except Exception as e:
         return JsonResponse({"error": f"Error interno: {str(e)}"}, status=500)
+
 
 def get_reviews(request, place_id):
     try:
@@ -73,38 +76,47 @@ def get_reviews(request, place_id):
     except Place.DoesNotExist:
         return JsonResponse({"error": "Lugar no encontrado"}, status=404)
 
+
 def error_404_view(request, exception):
     return render(request, 'places/404.html', status=404)
+
 
 # Configuraciones y carga de entorno
 logger = logging.getLogger(__name__)
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# SDK nuevo de OpenAI
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 GOOGLE_MAPS_API_KEY = settings.GOOGLE_MAPS_API_KEY
+
 
 # Funciones auxiliares
 
 def obtener_embedding(texto):
     try:
-        response = openai.Embedding.create(
-            model="text-embedding-ada-002",
+        r = client.embeddings.create(
+            model="text-embedding-3-small",
             input=texto
         )
-        return np.array(response['data'][0]['embedding'])
+        return np.array(r.data[0].embedding)
     except Exception as e:
         logger.error(f"Error obteniendo embedding: {e}")
         return None
 
+
 def cosine_similarity(a, b):
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
 
 def calcular_distancia(lat1, lon1, lat2, lon2):
     R = 6371
     dlat = radians(lat2 - lat1)
     dlon = radians(lon2 - lon1)
-    a = sin(dlat / 2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2)**2
+    a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
+
 
 def ordenar_lugares(lugares, lat_inicio, lon_inicio):
     ruta = []
@@ -116,13 +128,14 @@ def ordenar_lugares(lugares, lat_inicio, lon_inicio):
         lugares.remove(lugar_mas_cercano)
     return ruta
 
+
 @csrf_exempt
 def ruta_ai_view(request):
     if request.method == "GET":
         return render(request, 'ruta_ai.html', {
-        'GOOGLE_MAPS_API_KEY': GOOGLE_MAPS_API_KEY }
-        )
-        
+            'GOOGLE_MAPS_API_KEY': GOOGLE_MAPS_API_KEY}
+                      )
+
     elif request.method == "POST":
         try:
             data = json.loads(request.body)
@@ -131,11 +144,13 @@ def ruta_ai_view(request):
             prompt = data.get('prompt', '').strip()
 
             if not all([ciudad, presupuesto, prompt]):
-                return JsonResponse({'error': 'Todos los campos son requeridos', 'status': 'validation_error'}, status=400)
+                return JsonResponse({'error': 'Todos los campos son requeridos', 'status': 'validation_error'},
+                                    status=400)
 
             prompt_embedding = obtener_embedding(prompt)
             if prompt_embedding is None:
-                return JsonResponse({'error': 'No se pudo procesar el prompt con OpenAI', 'status': 'embedding_error'}, status=500)
+                return JsonResponse({'error': 'No se pudo procesar el prompt con OpenAI', 'status': 'embedding_error'},
+                                    status=500)
 
             prompt_embedding = prompt_embedding / np.linalg.norm(prompt_embedding)
             lugares = Place.objects.filter(city__iexact=ciudad)
@@ -166,9 +181,9 @@ def ruta_ai_view(request):
                 'description': lugar.description,
                 'category': lugar.category,
                 'cost': float(lugar.cost),
-                'address': lugar.address, 
-                'latitude': lugar.latitude,  
-                'longitude': lugar.longitude, 
+                'address': lugar.address,
+                'latitude': lugar.latitude,
+                'longitude': lugar.longitude,
                 'image_url': request.build_absolute_uri(lugar.image.url) if lugar.image else None,
                 'city': lugar.city,
                 'score': next(r['score'] for r in resultados if r['lugar'].id == lugar.id)
@@ -191,9 +206,11 @@ def ruta_ai_view(request):
 
         except Exception as e:
             logger.error(f"Error en ruta_ai_view: {str(e)}")
-            return JsonResponse({'error': 'Error interno del servidor', 'status': 'server_error', 'details': str(e)}, status=500)
+            return JsonResponse({'error': 'Error interno del servidor', 'status': 'server_error', 'details': str(e)},
+                                status=500)
 
     return JsonResponse({'error': 'Método no permitido', 'status': 'method_not_allowed'}, status=405)
+
 
 @csrf_exempt
 def obtener_ruta_google_maps(request):
@@ -210,7 +227,8 @@ def obtener_ruta_google_maps(request):
             if not lugares.exists():
                 return JsonResponse({"error": "No se encontraron lugares válidos"}, status=400)
 
-            coordenadas = [f"{lugar.latitude},{lugar.longitude}" for lugar in lugares if lugar.latitude and lugar.longitude]
+            coordenadas = [f"{lugar.latitude},{lugar.longitude}" for lugar in lugares if
+                           lugar.latitude and lugar.longitude]
 
             if len(coordenadas) < 2:
                 return JsonResponse({"error": "Se requieren al menos dos lugares con coordenadas válidas"}, status=400)
@@ -233,7 +251,6 @@ def obtener_ruta_google_maps(request):
             ruta = ruta_data["routes"][0]["overview_polyline"]["points"]
             duracion_total = round(sum(leg["duration"]["value"] for leg in ruta_data["routes"][0]["legs"]) / 60)
 
-
             return JsonResponse({
                 "ruta": ruta,
                 "duracion_total": duracion_total
@@ -244,5 +261,3 @@ def obtener_ruta_google_maps(request):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Método no permitido"}, status=405)
-
-
