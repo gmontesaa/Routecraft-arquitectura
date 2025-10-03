@@ -1,0 +1,89 @@
+# Setup del proyecto RouteCraft
+
+Requisitos previos:
+- Python 3.11 o 3.12 recomendado
+- pip actualizado
+- Cuenta y API key de OpenAI
+- API key de Google Maps Directions API
+
+------------------------------------------
+1) Clonar el proyecto y entrar a la carpeta
+------------------------------------------
+git clone <URL_DEL_REPO>
+cd routecraft
+
+------------------------------------------
+2) Crear y activar entorno virtual
+------------------------------------------
+python -m venv .venv
+# Windows PowerShell
+.\.venv\Scripts\Activate
+# Linux/Mac
+source .venv/bin/activate
+
+------------------------------------------
+3) Instalar dependencias
+------------------------------------------
+pip install -r requirements.txt
+
+------------------------------------------
+4) Configurar variables de entorno
+------------------------------------------
+Crear un archivo .env en la raíz del proyecto con:
+OPENAI_API_KEY=sk-xxxx
+GOOGLE_MAPS_API_KEY=AIza...
+
+------------------------------------------
+5) Configuración de Django
+------------------------------------------
+- El proyecto ya carga el archivo .env en settings.py
+- Revisar que en settings.py esté:
+  load_dotenv(BASE_DIR / ".env")
+
+------------------------------------------
+6) Migraciones
+------------------------------------------
+python manage.py makemigrations
+python manage.py migrate
+
+------------------------------------------
+7) Crear superusuario (opcional)
+------------------------------------------
+python manage.py createsuperuser
+
+------------------------------------------
+8) Correr el servidor
+------------------------------------------
+python manage.py runserver
+
+------------------------------------------
+9) Script standalone para embeddings
+------------------------------------------
+python generate_embeddings.py
+- Recorre los Place sin embedding y genera vectores con OpenAI.
+- Guarda embeddings en la base de datos (campo JSONField).
+
+------------------------------------------
+10) Documentación de actividades
+------------------------------------------
+La documentación de las actividades del curso se encuentra en la carpeta `docs/`:
+
+- docs/actividad2_revision_calidad.md
+  → Revisión autocrítica: usabilidad, compatibilidad, rendimiento, seguridad, plan de inversión.
+
+- docs/actividad3_dip.md
+  → Implementación de Inversión de Dependencias (puertos, adaptadores, servicios para OpenAI y Google).
+
+- docs/actividad4_patron_python.md
+  → Implementación del patrón **Strategy + Factory** en el ranking de lugares.
+
+- docs/actividad5_patrones_django.md
+  → Aplicación de **CBV + mixins** (controladores) y **signals + normalización** (modelos).
+
+------------------------------------------
+Notas de seguridad y rendimiento
+------------------------------------------
+- Todas las llamadas requests usan timeout=10.
+- Evitar usar @csrf_exempt salvo en webhooks estrictos.
+- Fijar versiones en requirements.txt (ej. Django==4.2.14, openai==1.44.1).
+- Opcional: usar caché de rutas (Redis o memoria local) en services.py para mejorar rendimiento.

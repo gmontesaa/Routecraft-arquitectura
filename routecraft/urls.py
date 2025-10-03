@@ -26,7 +26,7 @@ urlpatterns = [
     path('', placesviews.home, name='home'),
     path('about/', placesviews.about, name='about'),
     
-    # Rutas para funciones específicas
+    # Rutas para funciones especï¿½ficas
     path('accounts/', include('accounts.urls')),
     path("search_places/", placesviews.search_places, name="search_places"),
     path("reviews/<int:place_id>/", placesviews.get_reviews, name="get_reviews"),
@@ -36,10 +36,12 @@ urlpatterns = [
     path('obtener-ruta-google/', placesviews.obtener_ruta_google_maps, name='obtener_ruta_google'),
     path('events/',include('events.urls')),
 
+    path("", include("places.urls")),
+
 
     # ESTA VA AL FINAL
     path('<str:city_name>/', placesviews.city_places, name='city_places'),
 ]
 
-# Servir archivos estáticos en modo de desarrollo
+# Servir archivos estï¿½ticos en modo de desarrollo
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

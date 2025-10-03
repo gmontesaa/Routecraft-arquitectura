@@ -3,39 +3,83 @@ from django.http import JsonResponse
 from .models import Place, Review
 from django.db.models import Avg, Q
 from django.views.decorators.csrf import csrf_exempt
-import json
-from openai import OpenAI
-from dotenv import load_dotenv
 from django.conf import settings
-import os
-import random
-import logging
-from math import radians, sin, cos, sqrt, atan2
-import requests
-import numpy as np
 
+import os
+import json
+import logging
+import numpy as np
+from math import radians, sin, cos, sqrt, atan2
+
+# ==== NUEVO: servicios y estrategias (DIP + Strategy) ====
+from .adapters.google_routing import GoogleRoutingClient
+from .adapters.openai_embeddings import OpenAIEmbeddingsClient
+from .services import RoutingService, EmbeddingService
+from .strategies.ranking import strategy_factory
+
+logger = logging.getLogger(__name__)
+
+# === Configuración ===
+GOOGLE_MAPS_API_KEY = getattr(settings, "GOOGLE_MAPS_API_KEY", os.getenv("GOOGLE_MAPS_API_KEY"))
+
+# ========================
+#      VISTAS BÁSICAS
+# ========================
 
 def home(request):
     return render(request, 'home.html')
 
-
 def about(request):
     return render(request, 'about.html')
 
+def reviews_page(request):
+    return render(request, "reviews.html")
+
+def error_404_view(request, exception):
+    return render(request, 'places/404.html', status=404)
+
+# ========================
+#    BÚSQUEDA / LISTADOS
+# ========================
 
 def city_places(request, city_name):
+    """
+    Listado por ciudad con soporte de ordenamiento vía estrategia:
+    ?order=distance|rating|budget|hybrid  (por defecto: hybrid)
+    También mantiene el filtro por nombre ?searchPlace=<texto>
+    """
     VALID_CITIES = ["medellin", "bogota", "barranquilla"]
+    if city_name not in VALID_CITIES:
+        return render(request, 'places/404.html', status=404)
 
-    searchTerm = request.GET.get('searchPlace', '')
+    searchTerm = request.GET.get('searchPlace', '').strip()
+    order = request.GET.get('order', 'hybrid').strip().lower()
+
     places = Place.objects.filter(city=city_name)
     if searchTerm:
         places = places.filter(name__icontains=searchTerm)
 
-    return render(request, f'{city_name}.html', {'searchTerm': searchTerm, 'places': places})
+    # Construir items para Strategy (si faltan campos, se colocan defaults seguros)
+    items = []
+    for p in places:
+        items.append({
+            "id": p.id,
+            "name": p.name,
+            "distance_km": getattr(p, "distance_km", 1.0),  # si lo calculas en otro lado, aquí se usa
+            "avg_rating": float(getattr(p, "avg_rating", 0.0)),
+            "num_reviews": int(getattr(p, "reviews_count", 0)),
+            "cost": float(p.cost or 0.0),
+            "obj": p,
+        })
 
+    strategy = strategy_factory(order)
+    ranked = strategy.rank(items) if items else []
+    ranked_places = [it["obj"] for it in ranked] if ranked else places
 
-def reviews_page(request):
-    return render(request, "reviews.html")
+    return render(request, f'{city_name}.html', {
+        'searchTerm': searchTerm,
+        'places': ranked_places
+    })
 
 
 def search_places(request):
@@ -54,6 +98,7 @@ def search_places(request):
         return JsonResponse(results, safe=False)
 
     except Exception as e:
+        logger.exception("Error en search_places")
         return JsonResponse({"error": f"Error interno: {str(e)}"}, status=500)
 
 
@@ -77,37 +122,12 @@ def get_reviews(request, place_id):
         return JsonResponse({"error": "Lugar no encontrado"}, status=404)
 
 
-def error_404_view(request, exception):
-    return render(request, 'places/404.html', status=404)
-
-
-# Configuraciones y carga de entorno
-logger = logging.getLogger(__name__)
-load_dotenv()
-
-# SDK nuevo de OpenAI
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-GOOGLE_MAPS_API_KEY = settings.GOOGLE_MAPS_API_KEY
-
-
-# Funciones auxiliares
-
-def obtener_embedding(texto):
-    try:
-        r = client.embeddings.create(
-            model="text-embedding-3-small",
-            input=texto
-        )
-        return np.array(r.data[0].embedding)
-    except Exception as e:
-        logger.error(f"Error obteniendo embedding: {e}")
-        return None
-
+# ========================
+#   UTILIDADES LOCALES
+# ========================
 
 def cosine_similarity(a, b):
-    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
-
+    return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
 def calcular_distancia(lat1, lon1, lat2, lon2):
     R = 6371
@@ -117,42 +137,62 @@ def calcular_distancia(lat1, lon1, lat2, lon2):
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
 
-
 def ordenar_lugares(lugares, lat_inicio, lon_inicio):
     ruta = []
-    while lugares:
-        lugar_mas_cercano = min(lugares, key=lambda lugar: calcular_distancia(
-            lat_inicio, lon_inicio, lugar.latitude, lugar.longitude))
+    restantes = list(lugares)
+    while restantes:
+        lugar_mas_cercano = min(
+            restantes,
+            key=lambda lugar: calcular_distancia(lat_inicio, lon_inicio, lugar.latitude, lugar.longitude)
+        )
         ruta.append(lugar_mas_cercano)
         lat_inicio, lon_inicio = lugar_mas_cercano.latitude, lugar_mas_cercano.longitude
-        lugares.remove(lugar_mas_cercano)
+        restantes.remove(lugar_mas_cercano)
     return ruta
 
 
-@csrf_exempt
+# ========================
+#  RUTA CON IA (EMBEDDINGS)
+# ========================
+
+@csrf_exempt  # quítalo si no lo necesitas para solicitudes cross-site
 def ruta_ai_view(request):
+    """
+    POST JSON:
+    {
+      "ciudad": "medellin",
+      "presupuesto": "bajo|medio|alto",
+      "prompt": "planes con poco presupuesto y cultura"
+    }
+    """
     if request.method == "GET":
-        return render(request, 'ruta_ai.html', {
-            'GOOGLE_MAPS_API_KEY': GOOGLE_MAPS_API_KEY}
-                      )
+        return render(request, 'ruta_ai.html', {'GOOGLE_MAPS_API_KEY': GOOGLE_MAPS_API_KEY})
 
     elif request.method == "POST":
         try:
-            data = json.loads(request.body)
-            ciudad = data.get('ciudad', '').lower()
-            presupuesto = data.get('presupuesto', '').lower()
-            prompt = data.get('prompt', '').strip()
+            data = json.loads(request.body or "{}")
+            ciudad = (data.get('ciudad') or '').lower().strip()
+            presupuesto = (data.get('presupuesto') or '').lower().strip()
+            prompt = (data.get('prompt') or '').strip()
 
             if not all([ciudad, presupuesto, prompt]):
-                return JsonResponse({'error': 'Todos los campos son requeridos', 'status': 'validation_error'},
-                                    status=400)
+                return JsonResponse(
+                    {'error': 'Todos los campos son requeridos', 'status': 'validation_error'},
+                    status=400
+                )
 
-            prompt_embedding = obtener_embedding(prompt)
-            if prompt_embedding is None:
-                return JsonResponse({'error': 'No se pudo procesar el prompt con OpenAI', 'status': 'embedding_error'},
-                                    status=500)
+            # === DIP: servicio de embeddings ===
+            embed_service = EmbeddingService(OpenAIEmbeddingsClient())
+            try:
+                prompt_vec = np.array(embed_service.create_vectors([prompt])[0], dtype=float)
+                prompt_vec = prompt_vec / (np.linalg.norm(prompt_vec) or 1.0)
+            except Exception as e:
+                logger.exception("Error generando embedding del prompt")
+                return JsonResponse(
+                    {'error': 'No se pudo procesar el prompt con OpenAI', 'status': 'embedding_error'},
+                    status=500
+                )
 
-            prompt_embedding = prompt_embedding / np.linalg.norm(prompt_embedding)
             lugares = Place.objects.filter(city__iexact=ciudad)
 
             if presupuesto == "bajo":
@@ -164,13 +204,20 @@ def ruta_ai_view(request):
 
             resultados = []
             for lugar in lugares:
-                if lugar.embedding:
-                    lugar_embedding = np.array(lugar.embedding)
-                    lugar_embedding = lugar_embedding / np.linalg.norm(lugar_embedding)
-                    similitud = cosine_similarity(prompt_embedding, lugar_embedding)
-                    bonus = 0.1 if any(p in prompt.lower() for p in lugar.category.lower().split()) else 0
-                    score_final = similitud + bonus
-                    resultados.append({'lugar': lugar, 'score': score_final})
+                if hasattr(lugar, "embedding") and lugar.embedding:
+                    try:
+                        lugar_vec = np.array(lugar.embedding, dtype=float)
+                        lugar_vec = lugar_vec / (np.linalg.norm(lugar_vec) or 1.0)
+                        similitud = cosine_similarity(prompt_vec, lugar_vec)
+
+                        # Bonus básico: si categoria aparece en prompt
+                        bonus = 0.1 if any(p in prompt.lower() for p in (lugar.category or "").lower().split()) else 0.0
+                        score_final = float(similitud + bonus)
+
+                        resultados.append({'lugar': lugar, 'score': score_final})
+                    except Exception:
+                        # Si el embedding tiene formato inesperado, lo ignoramos
+                        continue
 
             resultados.sort(key=lambda x: x['score'], reverse=True)
             lugares_recomendados = [r['lugar'] for r in resultados[:5]]
@@ -180,84 +227,82 @@ def ruta_ai_view(request):
                 'name': lugar.name,
                 'description': lugar.description,
                 'category': lugar.category,
-                'cost': float(lugar.cost),
+                'cost': float(lugar.cost or 0.0),
                 'address': lugar.address,
                 'latitude': lugar.latitude,
                 'longitude': lugar.longitude,
-                'image_url': request.build_absolute_uri(lugar.image.url) if lugar.image else None,
+                'image_url': request.build_absolute_uri(lugar.image.url) if getattr(lugar, "image", None) else None,
                 'city': lugar.city,
-                'score': next(r['score'] for r in resultados if r['lugar'].id == lugar.id)
-
+                'score': next((r['score'] for r in resultados if r['lugar'].id == lugar.id), 0.0)
             } for lugar in lugares_recomendados]
 
             return JsonResponse({
                 'status': 'success',
                 'count': len(lugares_data),
                 'lugares': lugares_data,
-                'query': {
-                    'ciudad': ciudad,
-                    'presupuesto': presupuesto,
-                    'prompt': prompt
-                }
+                'query': {'ciudad': ciudad, 'presupuesto': presupuesto, 'prompt': prompt}
             })
 
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Formato JSON inválido', 'status': 'invalid_json'}, status=400)
-
         except Exception as e:
-            logger.error(f"Error en ruta_ai_view: {str(e)}")
-            return JsonResponse({'error': 'Error interno del servidor', 'status': 'server_error', 'details': str(e)},
-                                status=500)
+            logger.exception("Error en ruta_ai_view")
+            return JsonResponse(
+                {'error': 'Error interno del servidor', 'status': 'server_error', 'details': str(e)},
+                status=500
+            )
 
     return JsonResponse({'error': 'Método no permitido', 'status': 'method_not_allowed'}, status=405)
 
 
-@csrf_exempt
+# ========================
+#   RUTAS GOOGLE MAPS (DIP)
+# ========================
+
+@csrf_exempt  # quítalo si no lo necesitas para solicitudes cross-site
 def obtener_ruta_google_maps(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            lugares_ids = data.get("lugares_ids", [])
+    """
+    POST JSON:
+    {
+      "lugares_ids": [1,2,3]
+    }
+    Respuesta:
+    { "ruta": <polyline>, "duracion_total": <minutos> }
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
 
-            if not lugares_ids:
-                return JsonResponse({"error": "No se recibieron lugares"}, status=400)
+    try:
+        data = json.loads(request.body or "{}")
+        lugares_ids = data.get("lugares_ids", [])
 
-            lugares = Place.objects.filter(id__in=lugares_ids).order_by('id')
+        if not lugares_ids:
+            return JsonResponse({"error": "No se recibieron lugares"}, status=400)
 
-            if not lugares.exists():
-                return JsonResponse({"error": "No se encontraron lugares válidos"}, status=400)
+        lugares = Place.objects.filter(id__in=lugares_ids).order_by('id')
+        if not lugares.exists():
+            return JsonResponse({"error": "No se encontraron lugares válidos"}, status=400)
 
-            coordenadas = [f"{lugar.latitude},{lugar.longitude}" for lugar in lugares if
-                           lugar.latitude and lugar.longitude]
+        # Armar waypoints [(lat, lon), ...]
+        coords = []
+        for l in lugares:
+            if getattr(l, "latitude", None) is not None and getattr(l, "longitude", None) is not None:
+                coords.append((float(l.latitude), float(l.longitude)))
 
-            if len(coordenadas) < 2:
-                return JsonResponse({"error": "Se requieren al menos dos lugares con coordenadas válidas"}, status=400)
+        if len(coords) < 2:
+            return JsonResponse(
+                {"error": "Se requieren al menos dos lugares con coordenadas válidas"},
+                status=400
+            )
 
-            directions_url = "https://maps.googleapis.com/maps/api/directions/json"
-            params = {
-                "origin": coordenadas[0],
-                "destination": coordenadas[-1],
-                "waypoints": "|".join(coordenadas[1:-1]) if len(coordenadas) > 2 else '',
-                "key": GOOGLE_MAPS_API_KEY,
-                "mode": "driving"
-            }
+        # === DIP: servicio de ruteo ===
+        routing_service = RoutingService(GoogleRoutingClient(api_key=GOOGLE_MAPS_API_KEY))
+        polyline, minutes = routing_service.get_polyline_and_minutes(coords)
 
-            response = requests.get(directions_url, params=params)
-            ruta_data = response.json()
+        return JsonResponse({"ruta": polyline, "duracion_total": minutes})
 
-            if ruta_data.get("status") != "OK":
-                return JsonResponse({"error": "Error obteniendo la ruta de Google Maps"}, status=500)
-
-            ruta = ruta_data["routes"][0]["overview_polyline"]["points"]
-            duracion_total = round(sum(leg["duration"]["value"] for leg in ruta_data["routes"][0]["legs"]) / 60)
-
-            return JsonResponse({
-                "ruta": ruta,
-                "duracion_total": duracion_total
-            })
-
-        except Exception as e:
-            logger.error(f"Error en obtener_ruta_google_maps: {e}")
-            return JsonResponse({"error": str(e)}, status=500)
-
-    return JsonResponse({"error": "Método no permitido"}, status=405)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "JSON inválido"}, status=400)
+    except Exception as e:
+        logger.exception("Error en obtener_ruta_google_maps")
+        return JsonResponse({"error": str(e)}, status=500)

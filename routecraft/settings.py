@@ -11,8 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 from decouple import config
 from pathlib import Path
-import os 
-
+import os
+from dotenv import load_dotenv
 
 # Ruta base del proyecto (la carpeta donde está manage.py)
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,6 +23,7 @@ GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 MEDIA_URL = '/media/'

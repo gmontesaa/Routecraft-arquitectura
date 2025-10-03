@@ -1,4 +1,5 @@
 ﻿from django.db import models
+from django.urls import reverse
 
 
 class Place(models.Model):
@@ -22,6 +23,9 @@ class Place(models.Model):
 
     embedding = models.JSONField(null=True, blank=True)
 
+    # === NUEVOS CAMPOS PARA NORMALIZACIÓN (Actividad 5) ===
+    avg_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    reviews_count = models.PositiveIntegerField(default=0)
 
     def average_rating(self):
         reviews = self.reviews.all()
@@ -29,10 +33,12 @@ class Place(models.Model):
             return sum(r.rating for r in reviews) / len(reviews)
         return 0
 
+    def get_absolute_url(self):
+        """Permite que las CBV (DetailView, UpdateView, etc.) redirijan bien."""
+        return reverse("place_detail", args=[self.pk])
 
     def __str__(self):
         return f"{self.name} - {self.get_city_display()}"
-
 
 
 class Review(models.Model):
