@@ -118,7 +118,7 @@ routecraft/
 
 ---
 
-## 👨‍💻 Autor
+## 👨‍💻 Autores
 
 Proyecto desarrollado por **Gerónimo Montes Acebedo** y **Luis Estiven Moreno**  
 Curso: **Arquitectura de Software (ST0251)**  
