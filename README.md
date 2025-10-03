@@ -27,23 +27,41 @@ El sistema integra **IA (OpenAI Embeddings)** para recomendaciones personalizada
 ## 📂 Estructura del proyecto
 
 routecraft/
+
 ├── manage.py
+
 ├── routecraft/ # Configuración principal
+
 ├── places/ # App principal: lugares, reseñas, IA, rutas
+
 │ ├── adapters/ # Adaptadores OpenAI + Google Maps (DIP)
+
 │ ├── strategies/ # Estrategias de ranking (Strategy + Factory)
+
 │ ├── forms.py # Formularios para CRUD
+
 │ ├── models.py # Modelos Place y Review
+
 │ ├── views.py # Vistas FBV (IA, rutas)
+
 │ ├── views_cbv.py # Vistas CBV (CRUD)
+
 │ ├── signals.py # Signals para recalcular ratings
+
 │ └── urls.py # URLs de la app
+
 ├── events/ # App de eventos
+
 ├── accounts/ # App de usuarios
+
 ├── docs/ # Documentación de actividades
+
 │ ├── actividad2_revision_calidad.md
+
 │ ├── actividad4_patron_python.md
+
 │ └── actividad5_patrones_django.md
+
 └── generate_embeddings.py # Script standalone para embeddings
 
 
@@ -102,6 +120,6 @@ routecraft/
 
 ## 👨‍💻 Autor
 
-Proyecto desarrollado por **Gerónimo Montes Acebedo Y Luis Estiven Moreno**  
+Proyecto desarrollado por **Gerónimo Montes Acebedo** y **Luis Estiven Moreno**  
 Curso: **Arquitectura de Software (ST0251)**  
 Universidad EAFIT – 2025
