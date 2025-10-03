@@ -1,2 +1,64 @@
-*.pyc
+# =====================================
+# Python
+# =====================================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribuciones / builds
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Archivos de entorno
 .env
+*.env
+
+# =====================================
+# Django
+# =====================================
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/          # Archivos subidos por usuarios
+staticfiles/    # Archivos recolectados por collectstatic
+local_settings.py
+
+# =====================================
+# Virtual environments
+# =====================================
+env/
+venv/
+ENV/
+.venv/
+
+# =====================================
+# IDEs y editores
+# =====================================
+.vscode/
+.idea/
+.vs/
+
+# =====================================
+# Node.js (si usas frontend)
+# =====================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =====================================
+# SO / Sistema
+# =====================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =====================================
+# Otros posibles
+# =====================================
+coverage/
+.pytest_cache/
+.mypy_cache/
